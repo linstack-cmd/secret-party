@@ -33,7 +33,7 @@ export async function createBackup(): Promise<{
   filename: string;
   path: string;
 }> {
-  const backupDir = env.BACKUP_DIR;
+  const backupDir = env.BACKUP_CONTAINER_PATH;
 
   if (!existsSync(backupDir)) {
     await mkdir(backupDir, { recursive: true });
@@ -78,7 +78,7 @@ export async function readBackup(filename: string): Promise<string> {
     throw new Error("Invalid backup filename");
   }
 
-  const filepath = join(env.BACKUP_DIR, filename);
+  const filepath = join(env.BACKUP_CONTAINER_PATH, filename);
   return readFile(filepath, "utf-8");
 }
 
@@ -89,7 +89,7 @@ export interface BackupInfo {
 }
 
 export async function listBackups(): Promise<BackupInfo[]> {
-  const backupDir = env.BACKUP_DIR;
+  const backupDir = env.BACKUP_CONTAINER_PATH;
 
   if (!existsSync(backupDir)) {
     return [];
