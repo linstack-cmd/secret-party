@@ -22,6 +22,12 @@ async function waitForPostgres(timeoutMs = 30_000) {
 }
 
 function startPostgres() {
+  if (dbUrl.hostname !== "localhost") {
+    throw new Error(
+      `Refusing to start local Postgres: DATABASE_URL points to "${dbUrl.hostname}", not localhost`,
+    );
+  }
+
   const docker = spawn(
     "docker",
     [
