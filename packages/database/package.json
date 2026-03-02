@@ -4,7 +4,8 @@
   "description": "Secret Party Database Package",
   "type": "module",
   "scripts": {
-    "dev": "tsx dev.ts"
+    "dev": "tsx dev.ts",
+    "migrate": "drizzle-kit migrate"
   },
   "exports": {
     "./*": {
