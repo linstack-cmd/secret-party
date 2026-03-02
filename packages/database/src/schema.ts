@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import {
   text,
   integer,
@@ -23,6 +23,12 @@ export const bigintString = customType<{ data: string }>({
   toDriver(value) {
     return value;
   },
+  fromJson(value) {
+    return String(value);
+  },
+  forJsonSelect(identifier, sql) {
+    return sql`${identifier}::text`;
+  },
 });
 
 const bigIntPrimaryKey = () => bigintString().primaryKey().default(sql`unique_rowid()`);
@@ -34,13 +40,6 @@ export const userTable = pgTable("user", {
   isAdmin: integer().notNull().default(0),
 });
 
-export const userRelations = relations(userTable, ({ many }) => ({
-  projects: many(projectTable),
-  sessions: many(sessionTable),
-  apiClients: many(apiClientTable),
-  auditLogs: many(auditLogTable),
-}));
-
 export const sessionTable = pgTable("session", {
   id: bigIntPrimaryKey(),
   userId: bigintString()
@@ -51,13 +50,6 @@ export const sessionTable = pgTable("session", {
   createdAt: timestamp({ mode: "string" }).notNull().defaultNow(),
 });
 
-export const sessionRelations = relations(sessionTable, ({ one }) => ({
-  user: one(userTable, {
-    fields: [sessionTable.userId],
-    references: [userTable.id],
-  }),
-}));
-
 export const projectTable = pgTable("project", {
   id: bigIntPrimaryKey(),
   name: text().notNull(),
@@ -65,14 +57,6 @@ export const projectTable = pgTable("project", {
     .notNull()
     .references(() => userTable.id, { onDelete: "cascade" }),
 });
-
-export const projectRelations = relations(projectTable, ({ one, many }) => ({
-  owner: one(userTable, {
-    fields: [projectTable.ownerId],
-    references: [userTable.id],
-  }),
-  environments: many(environmentTable),
-}));
 
 export const environmentTable = pgTable("environment", {
   id: bigIntPrimaryKey(),
@@ -82,18 +66,6 @@ export const environmentTable = pgTable("environment", {
     .references(() => projectTable.id, { onDelete: "cascade" }),
   dekWrappedByPassword: text().notNull(),
 });
-
-export const environmentRelations = relations(
-  environmentTable,
-  ({ one, many }) => ({
-    project: one(projectTable, {
-      fields: [environmentTable.projectId],
-      references: [projectTable.id],
-    }),
-    secrets: many(secretTable),
-    access: many(environmentAccessTable),
-  }),
-);
 
 export const secretTable = pgTable(
   "secret",
@@ -107,13 +79,6 @@ export const secretTable = pgTable(
   (table) => [primaryKey({ columns: [table.environmentId, table.key] })],
 );
 
-export const secretRelations = relations(secretTable, ({ one }) => ({
-  environment: one(environmentTable, {
-    fields: [secretTable.environmentId],
-    references: [environmentTable.id],
-  }),
-}));
-
 export const apiClientTable = pgTable("api_client", {
   id: bigIntPrimaryKey(),
   name: text().notNull(),
@@ -122,18 +87,6 @@ export const apiClientTable = pgTable("api_client", {
     .notNull()
     .references(() => userTable.id, { onDelete: "cascade" }),
 });
-
-export const apiClientRelations = relations(
-  apiClientTable,
-  ({ one, many }) => ({
-    user: one(userTable, {
-      fields: [apiClientTable.userId],
-      references: [userTable.id],
-    }),
-    access: many(environmentAccessTable),
-    auditLogs: many(auditLogTable),
-  }),
-);
 
 export const environmentAccessTable = pgTable(
   "environment_access",
@@ -149,20 +102,6 @@ export const environmentAccessTable = pgTable(
   (table) => [primaryKey({ columns: [table.environmentId, table.clientId] })],
 );
 
-export const environmentAccessRelations = relations(
-  environmentAccessTable,
-  ({ one }) => ({
-    environment: one(environmentTable, {
-      fields: [environmentAccessTable.environmentId],
-      references: [environmentTable.id],
-    }),
-    client: one(apiClientTable, {
-      fields: [environmentAccessTable.clientId],
-      references: [apiClientTable.id],
-    }),
-  }),
-);
-
 export const auditLogTable = pgTable("audit_log", {
   id: bigIntPrimaryKey(),
   timestamp: timestamp({ mode: "string" }).notNull().defaultNow(),
@@ -176,13 +115,3 @@ export const auditLogTable = pgTable("audit_log", {
   details: text(),
 });
 
-export const auditLogRelations = relations(auditLogTable, ({ one }) => ({
-  user: one(userTable, {
-    fields: [auditLogTable.userId],
-    references: [userTable.id],
-  }),
-  apiClient: one(apiClientTable, {
-    fields: [auditLogTable.apiClientId],
-    references: [apiClientTable.id],
-  }),
-}));

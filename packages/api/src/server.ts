@@ -6,7 +6,6 @@ import { db } from "@secret-party/database/db";
 import {
   apiClientTable,
   environmentAccessTable,
-  environmentTable,
   secretTable,
 } from "@secret-party/database/schema";
 import { logAuditEvent } from "@secret-party/audit/logger";
@@ -59,7 +58,7 @@ async function authorizationMiddleware(
   }
 
   const apiClient = await db.query.apiClientTable.findFirst({
-    where: eq(apiClientTable.publicKey, publicKey),
+    where: { publicKey },
   });
 
   if (apiClient == null) {
@@ -83,10 +82,7 @@ async function environmentAccessMiddleware(
   const apiClient = c.get("apiClient");
 
   const access = await db.query.environmentAccessTable.findFirst({
-    where: and(
-      eq(environmentAccessTable.clientId, apiClient.id),
-      eq(environmentAccessTable.environmentId, environmentId),
-    ),
+    where: { clientId: apiClient.id, environmentId },
   });
 
   if (access == null) {
@@ -125,7 +121,7 @@ function buildPublicApiServer() {
         const { environmentId } = c.req.valid("param");
 
         const environment = await db.query.environmentTable.findFirst({
-          where: eq(environmentTable.id, environmentId),
+          where: { id: environmentId },
         });
 
         return c.json({ environment });
@@ -145,7 +141,7 @@ function buildPublicApiServer() {
         const apiClient = c.get("apiClient");
 
         const environment = await db.query.environmentTable.findFirst({
-          where: eq(environmentTable.id, environmentId),
+          where: { id: environmentId },
           with: {
             secrets: {
               columns: { key: true },
@@ -186,10 +182,7 @@ function buildPublicApiServer() {
         const apiClient = c.get("apiClient");
 
         const secret = await db.query.secretTable.findFirst({
-          where: and(
-            eq(secretTable.environmentId, environmentId),
-            eq(secretTable.key, key),
-          ),
+          where: { environmentId, key },
           columns: {
             key: true,
             valueEncrypted: true,
@@ -234,10 +227,7 @@ function buildPublicApiServer() {
         const apiClient = c.get("apiClient");
 
         const existingSecret = await db.query.secretTable.findFirst({
-          where: and(
-            eq(secretTable.environmentId, environmentId),
-            eq(secretTable.key, key),
-          ),
+          where: { environmentId, key },
         });
 
         if (existingSecret) {
@@ -284,10 +274,7 @@ function buildPublicApiServer() {
         const apiClient = c.get("apiClient");
 
         const existingSecret = await db.query.secretTable.findFirst({
-          where: and(
-            eq(secretTable.environmentId, environmentId),
-            eq(secretTable.key, key),
-          ),
+          where: { environmentId, key },
         });
 
         if (existingSecret == null) {
@@ -328,10 +315,7 @@ function buildPublicApiServer() {
         const apiClient = c.get("apiClient");
 
         const existingSecret = await db.query.secretTable.findFirst({
-          where: and(
-            eq(secretTable.environmentId, environmentId),
-            eq(secretTable.key, key),
-          ),
+          where: { environmentId, key },
         });
 
         if (existingSecret == null) {
@@ -363,7 +347,7 @@ function buildPublicApiServer() {
 
       // Get all environments this API key has access to
       const accessRecords = await db.query.environmentAccessTable.findMany({
-        where: eq(environmentAccessTable.clientId, apiClient.id),
+        where: { clientId: apiClient.id },
         with: {
           environment: {
             with: {
@@ -373,12 +357,14 @@ function buildPublicApiServer() {
         },
       });
 
-      const environments = accessRecords.map((access) => ({
-        id: access.environment.id,
-        name: access.environment.name,
-        projectId: access.environment.projectId,
-        projectName: access.environment.project.name,
-      }));
+      const environments = accessRecords
+        .filter((access) => access.environment != null)
+        .map((access) => ({
+          id: access.environment!.id,
+          name: access.environment!.name,
+          projectId: access.environment!.projectId,
+          projectName: access.environment!.project!.name,
+        }));
 
       return c.json({ environments });
     })

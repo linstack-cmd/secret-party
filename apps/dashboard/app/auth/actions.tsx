@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm";
 import { db } from "@secret-party/database/db";
 import { userTable } from "@secret-party/database/schema";
 import { verifyPassword, hashPassword } from "./hash";
@@ -21,7 +20,7 @@ export const login = createServerFn({ method: "POST" })
 
     // Find user by email
     const user = await db.query.userTable.findFirst({
-      where: eq(userTable.email, email),
+      where: { email },
     });
 
     if (!user) {

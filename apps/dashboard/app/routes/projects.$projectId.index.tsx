@@ -8,8 +8,7 @@ import { mainContent } from "../styles/shared";
 import { createServerFn } from "@tanstack/react-start";
 import z from "zod";
 import { db } from "@secret-party/database/db";
-import { projectTable, environmentTable } from "@secret-party/database/schema";
-import { eq } from "drizzle-orm";
+import { environmentTable } from "@secret-party/database/schema";
 import { useState } from "react";
 import { Modal } from "../components/Modal";
 import { generateDek, wrapDekWithPassword } from "../crypto/dek";
@@ -35,7 +34,7 @@ const loader = createServerFn({ method: "GET" })
     const session = await requireAuth();
 
     const project = await db.query.projectTable.findFirst({
-      where: eq(projectTable.id, projectId),
+      where: { id: projectId },
       with: {
         environments: {
           columns: {
@@ -86,7 +85,7 @@ const createEnvironment = createServerFn({
 
     // Verify the project belongs to the user
     const project = await db.query.projectTable.findFirst({
-      where: eq(projectTable.id, projectId),
+      where: { id: projectId },
     });
 
     if (project == null) {

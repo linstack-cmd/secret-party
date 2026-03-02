@@ -8,7 +8,7 @@ import { mainContent } from "../styles/shared";
 import { createServerFn } from "@tanstack/react-start";
 import z from "zod";
 import { db } from "@secret-party/database/db";
-import { environmentTable, secretTable } from "@secret-party/database/schema";
+import { secretTable } from "@secret-party/database/schema";
 import { and, eq } from "drizzle-orm";
 import { useState } from "react";
 import { Modal } from "../components/Modal";
@@ -45,10 +45,7 @@ const loader = createServerFn({
     const session = await requireAuth();
 
     const environment = await db.query.environmentTable.findFirst({
-      where: and(
-        eq(environmentTable.id, environmentId),
-        eq(environmentTable.projectId, projectId)
-      ),
+      where: { id: environmentId, projectId },
       with: {
         project: {
           columns: {
@@ -87,7 +84,7 @@ const createSecret = createServerFn({
     const session = await requireAuth();
 
     const environment = await db.query.environmentTable.findFirst({
-      where: eq(environmentTable.id, data.environmentId),
+      where: { id: data.environmentId },
     });
 
     if (environment == null) {
@@ -162,7 +159,7 @@ const decryptSecret = createServerFn({
     const session = await requireAuth();
 
     const environment = await db.query.environmentTable.findFirst({
-      where: eq(environmentTable.id, data.environmentId),
+      where: { id: data.environmentId },
     });
     if (environment == null) {
       throw new Error("Missing environment");
@@ -172,10 +169,7 @@ const decryptSecret = createServerFn({
       data.password
     );
     const secret = await db.query.secretTable.findFirst({
-      where: and(
-        eq(secretTable.environmentId, data.environmentId),
-        eq(secretTable.key, data.key)
-      ),
+      where: { environmentId: data.environmentId, key: data.key },
     });
     if (secret == null) {
       throw new Error("Missing secret");

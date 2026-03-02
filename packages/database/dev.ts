@@ -4,7 +4,7 @@ import { env } from "@secret-party/env/env";
 
 const dbUrl = new URL(env.DATABASE_URL);
 
-async function waitForPostgres(timeoutMs = 30_000) {
+async function waitForCockroachDB(timeoutMs = 30_000) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     const client = new pg.Client({ connectionString: env.DATABASE_URL });
@@ -17,14 +17,14 @@ async function waitForPostgres(timeoutMs = 30_000) {
     }
   }
   throw new Error(
-    `Timed out waiting for Postgres on ${dbUrl.hostname}:${dbUrl.port}`,
+    `Timed out waiting for CockroachDB on ${dbUrl.hostname}:${dbUrl.port}`,
   );
 }
 
-function startPostgres() {
+function startCockroachDB() {
   if (dbUrl.hostname !== "localhost") {
     throw new Error(
-      `Refusing to start local Postgres: DATABASE_URL points to "${dbUrl.hostname}", not localhost`,
+      `Refusing to start local CockroachDB: DATABASE_URL points to "${dbUrl.hostname}", not localhost`,
     );
   }
 
@@ -33,17 +33,13 @@ function startPostgres() {
     [
       "run",
       "--rm",
-      "-e",
-      `POSTGRES_USER=${dbUrl.username}`,
-      "-e",
-      `POSTGRES_PASSWORD=${dbUrl.password}`,
-      "-e",
-      `POSTGRES_DB=${dbUrl.pathname.slice(1)}`,
       "-p",
-      `${dbUrl.port}:5432`,
-      "postgres",
-      "-c",
-      "log_statement=all",
+      `${dbUrl.port}:26257`,
+      "-p",
+      "8080:8080",
+      "cockroachdb/cockroach:latest-v25.1",
+      "start-single-node",
+      "--insecure",
     ],
     { stdio: "inherit" },
   );
@@ -70,16 +66,16 @@ function startPostgres() {
 }
 
 async function main() {
-  const killPostgres = startPostgres();
+  const killCockroachDB = startCockroachDB();
 
   try {
-    await waitForPostgres();
-    console.log("Postgres is ready. Running migrations...");
+    await waitForCockroachDB();
+    console.log("CockroachDB is ready. Running migrations...");
     execSync("pnpm drizzle-kit migrate", { stdio: "inherit" });
     console.log("Migrations complete.");
   } catch (err) {
     console.error(err);
-    killPostgres();
+    killCockroachDB();
     process.exit(1);
   }
 }
