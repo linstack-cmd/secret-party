@@ -65,7 +65,7 @@ export async function requireAuth(redirectTo: string = "/login") {
 
 async function findValidSessionByToken(token: string) {
   const result = await db.query.sessionTable.findFirst({
-    where: eq(sessionTable.token, token),
+    where: { token },
     with: { user: true },
   });
 

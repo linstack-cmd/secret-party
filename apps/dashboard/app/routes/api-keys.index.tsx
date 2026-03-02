@@ -8,7 +8,6 @@ import { Breadcrumb } from "../components/Breadcrumb";
 import { mainContent } from "../styles/shared";
 import { db } from "@secret-party/database/db";
 import { apiClientTable } from "@secret-party/database/schema";
-import { eq } from "drizzle-orm";
 import { useState } from "react";
 import { Modal } from "../components/Modal";
 import { Button } from "../components/Button";
@@ -31,7 +30,7 @@ const loader = createServerFn({
   const session = await requireAuth();
 
   const apiClients = await db.query.apiClientTable.findMany({
-    where: eq(apiClientTable.userId, session.userId),
+    where: { userId: session.userId },
     with: {
       access: {
         with: {

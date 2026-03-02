@@ -9,8 +9,6 @@ import { mainContent } from "../styles/shared";
 import { db } from "@secret-party/database/db";
 import {
   apiClientTable,
-  environmentTable,
-  projectTable,
   environmentAccessTable,
 } from "@secret-party/database/schema";
 import { eq, and } from "drizzle-orm";
@@ -42,7 +40,7 @@ const loader = createServerFn({ method: "GET" })
 
     // Load the API client with its access records
     const apiClient = await db.query.apiClientTable.findFirst({
-      where: eq(apiClientTable.id, apiClientId),
+      where: { id: apiClientId },
       with: {
         access: {
           with: {
@@ -67,7 +65,7 @@ const loader = createServerFn({ method: "GET" })
 
     // Load all environments from projects owned by the user
     const projects = await db.query.projectTable.findMany({
-      where: eq(projectTable.ownerId, session.user.id),
+      where: { ownerId: session.user.id },
       with: {
         environments: {
           columns: {
@@ -117,7 +115,7 @@ const grantAccess = createServerFn({
 
     // Verify API client ownership
     const apiClient = await db.query.apiClientTable.findFirst({
-      where: eq(apiClientTable.id, apiClientId),
+      where: { id: apiClientId },
     });
 
     if (apiClient == null || apiClient.userId !== session.user.id) {
@@ -126,7 +124,7 @@ const grantAccess = createServerFn({
 
     // Verify environment ownership
     const environment = await db.query.environmentTable.findFirst({
-      where: eq(environmentTable.id, environmentId),
+      where: { id: environmentId },
       with: {
         project: true,
       },
@@ -141,10 +139,7 @@ const grantAccess = createServerFn({
 
     // Check if access already exists
     const existingAccess = await db.query.environmentAccessTable.findFirst({
-      where: and(
-        eq(environmentAccessTable.clientId, apiClientId),
-        eq(environmentAccessTable.environmentId, environmentId)
-      ),
+      where: { clientId: apiClientId, environmentId },
     });
 
     if (existingAccess != null) {
@@ -195,7 +190,7 @@ const revokeAccess = createServerFn({
 
     // Verify API client ownership
     const apiClient = await db.query.apiClientTable.findFirst({
-      where: eq(apiClientTable.id, apiClientId),
+      where: { id: apiClientId },
     });
 
     if (apiClient == null || apiClient.userId !== session.user.id) {
@@ -235,7 +230,7 @@ const deleteApiKey = createServerFn({
 
     // Verify API client ownership
     const apiClient = await db.query.apiClientTable.findFirst({
-      where: eq(apiClientTable.id, apiClientId),
+      where: { id: apiClientId },
     });
 
     if (apiClient == null || apiClient.userId !== session.user.id) {

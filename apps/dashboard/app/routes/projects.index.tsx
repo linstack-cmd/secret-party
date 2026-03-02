@@ -4,7 +4,6 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { useForm } from "@tanstack/react-form";
 import { clsx } from "clsx";
-import { eq } from "drizzle-orm";
 import { useRef, useState } from "react";
 import { z } from "zod";
 import { requireAuth } from "../auth/session";
@@ -28,7 +27,7 @@ const loader = createServerFn({
   const session = await requireAuth();
 
   const projects = await db.query.projectTable.findMany({
-    where: eq(projectTable.ownerId, session.user.id),
+    where: { ownerId: session.user.id },
     with: {
       environments: {
         columns: {
