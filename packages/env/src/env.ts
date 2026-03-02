@@ -1,5 +1,8 @@
-import "dotenv/config";
+import { config } from "dotenv";
 import { z } from "zod";
+
+// Relative to cwd (packages/env/), not this file — resolves to workspace root .env
+config({ path: "../../.env" });
 
 const LOCAL_DATABASE_URL =
   "postgresql://secretparty:secretparty@localhost:5432/secretparty";
