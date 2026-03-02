@@ -3,11 +3,6 @@ import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import * as schema from "./schema";
 
-// The pg driver's default INT8 parser calls parseInt(), which silently corrupts
-// values above Number.MAX_SAFE_INTEGER. CockroachDB's unique_rowid() always
-// generates INT8 IDs in that range, so we must return them as strings.
-pg.types.setTypeParser(pg.types.builtins.INT8, String);
-
 declare global {
   /**
    * Global cache for the drizzle db client.
@@ -20,7 +15,20 @@ declare global {
 }
 
 function buildDrizzle() {
-  return drizzle(env.DATABASE_URL, {
+  // Create the Pool ourselves so the INT8 type parser override is guaranteed
+  // to apply. Passing a URL string to drizzle() lets it create the Pool from
+  // its own pg import, which pnpm may resolve to a different module instance.
+  const pool = new pg.Pool({
+    connectionString: env.DATABASE_URL,
+    types: {
+      getTypeParser(oid, format) {
+        if (oid === pg.types.builtins.INT8) return String;
+        return pg.types.getTypeParser(oid, format);
+      },
+    },
+  });
+
+  return drizzle(pool, {
     casing: "snake_case",
     schema,
   });
