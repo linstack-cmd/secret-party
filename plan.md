@@ -146,7 +146,7 @@ The following items are explicitly **not** included in this implementation:
 ### Backup
 
 - Manual trigger from dashboard
-- Saves full encrypted database dump as JSON to server filesystem (`BACKUP_DIR` env var, default `./backups/`)
+- Saves full encrypted database dump as JSON to server filesystem (`BACKUP_CONTAINER_PATH` env var, default `./backups/`; host path configurable via `BACKUP_LOCATION` in `.env`)
 - Includes all tables except sessions (ephemeral)
 - Secrets remain encrypted (DEKs stay wrapped), so backups are safe at rest
 

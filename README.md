@@ -9,7 +9,7 @@ Simple self-hostable secrets manager
 - Organize your secrets by projects and environments (e.g. prod & staging)
   - Secrets are stored as key-value pairs.
   - No versioning.
-- Backup & restore (admin-only). Full encrypted database backup to server filesystem with transactional wipe-and-restore. Auto-creates a safety backup before each restore.
+- Backup & restore (admin-only). Full encrypted database backup to server filesystem with transactional wipe-and-restore. Auto-creates a safety backup before each restore. Backup location is configurable via `BACKUP_LOCATION` environment variable (see [Backup Configuration](#backup-configuration)).
 - Public API for managing secrets.
   - Authentication: Bearer token using public key in Authorization header
   - Endpoints:
@@ -20,6 +20,16 @@ Simple self-hostable secrets manager
     - POST /api/v1/environments/:environmentId/secrets/:key - Create new secret
     - PUT /api/v1/environments/:environmentId/secrets/:key - Update existing secret
   - API key pair generation from dashboard.
+
+## Backup Configuration
+
+When running with Docker Compose, backups are stored in a bind-mounted volume. Set `BACKUP_LOCATION` environment variable to control where backups are stored on the host filesystem:
+
+```env
+BACKUP_LOCATION=/mnt/nas/secret-party-backups
+```
+
+Defaults to `./backups` (relative to `docker-compose.yaml`) if not set.
 
 ## How It Works
 

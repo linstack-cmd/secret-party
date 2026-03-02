@@ -5,3 +5,7 @@ services:
     restart: always
     build:
       context: .
+    environment:
+      - BACKUP_CONTAINER_PATH=/app/backups
+    volumes:
+      - ${BACKUP_LOCATION}:/app/backups
