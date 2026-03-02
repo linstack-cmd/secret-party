@@ -1,6 +1,5 @@
-import "dotenv/config";
+import { env } from "@secret-party/env/env";
 import { defineConfig } from "drizzle-kit";
-import { LOCAL_DATABASE_URL } from "./src/local";
 
 export default defineConfig({
   out: "./drizzle",
@@ -8,6 +7,6 @@ export default defineConfig({
   casing: "snake_case",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL ?? LOCAL_DATABASE_URL,
+    url: env.DATABASE_URL,
   },
 });

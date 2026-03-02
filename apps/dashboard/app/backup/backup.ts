@@ -8,15 +8,12 @@ import {
   environmentAccessTable,
   auditLogTable,
 } from "@secret-party/database/schema";
+import { env } from "@secret-party/env/env";
 import { writeFile, readFile, readdir, stat, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
 
 const BACKUP_VERSION = 1;
-
-function getBackupDir(): string {
-  return process.env.BACKUP_DIR || "./backups";
-}
 
 export interface BackupData {
   version: number;
@@ -36,7 +33,7 @@ export async function createBackup(): Promise<{
   filename: string;
   path: string;
 }> {
-  const backupDir = getBackupDir();
+  const backupDir = env.BACKUP_DIR;
 
   if (!existsSync(backupDir)) {
     await mkdir(backupDir, { recursive: true });
@@ -81,7 +78,7 @@ export async function readBackup(filename: string): Promise<string> {
     throw new Error("Invalid backup filename");
   }
 
-  const filepath = join(getBackupDir(), filename);
+  const filepath = join(env.BACKUP_DIR, filename);
   return readFile(filepath, "utf-8");
 }
 
@@ -92,7 +89,7 @@ export interface BackupInfo {
 }
 
 export async function listBackups(): Promise<BackupInfo[]> {
-  const backupDir = getBackupDir();
+  const backupDir = env.BACKUP_DIR;
 
   if (!existsSync(backupDir)) {
     return [];

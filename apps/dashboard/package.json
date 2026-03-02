@@ -23,6 +23,7 @@
     "@secret-party/api": "workspace:*",
     "@secret-party/audit": "workspace:*",
     "@secret-party/database": "workspace:*",
+    "@secret-party/env": "workspace:*",
     "@flow-css/core": "^1.4.0",
     "@noble/ciphers": "^2.0.0",
     "@noble/hashes": "^2.0.0",
