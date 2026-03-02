@@ -90,7 +90,7 @@ const createProject = createServerFn({
   });
 
 interface ProjectCardProps {
-  id: number;
+  id: string;
   name: string;
   environmentCount: number;
   secretCount: number;
@@ -102,7 +102,7 @@ function ProjectCard(props: ProjectCardProps) {
   const handleViewClick = () => {
     router.navigate({
       to: "/projects/$projectId",
-      params: { projectId: props.id.toString() },
+      params: { projectId: props.id },
     });
   };
 
@@ -181,7 +181,7 @@ function Projects() {
       if (result.project) {
         await router.navigate({
           to: "/projects/$projectId",
-          params: { projectId: result.project.id.toString() },
+          params: { projectId: result.project.id },
         });
       }
 

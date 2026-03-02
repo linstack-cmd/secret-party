@@ -1,15 +1,34 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   text,
   integer,
-  serial,
   pgTable,
   primaryKey,
   timestamp,
+  customType,
 } from "drizzle-orm/pg-core";
 
+/**
+ * CockroachDB's SERIAL generates INT8 values via unique_rowid() that exceed
+ * Number.MAX_SAFE_INTEGER. This custom type maps bigint DB columns to strings
+ * in JS to avoid precision loss.
+ */
+export const bigintString = customType<{ data: string }>({
+  dataType() {
+    return "bigint";
+  },
+  fromDriver(value) {
+    return String(value);
+  },
+  toDriver(value) {
+    return value;
+  },
+});
+
+const bigIntPrimaryKey = () => bigintString().primaryKey().default(sql`unique_rowid()`);
+
 export const userTable = pgTable("user", {
-  id: serial().primaryKey(),
+  id: bigIntPrimaryKey(),
   email: text().notNull().unique(),
   passwordHash: text().notNull(),
   isAdmin: integer().notNull().default(0),
@@ -23,8 +42,8 @@ export const userRelations = relations(userTable, ({ many }) => ({
 }));
 
 export const sessionTable = pgTable("session", {
-  id: serial().primaryKey(),
-  userId: integer()
+  id: bigIntPrimaryKey(),
+  userId: bigintString()
     .notNull()
     .references(() => userTable.id, { onDelete: "cascade" }),
   token: text().notNull().unique(),
@@ -40,9 +59,9 @@ export const sessionRelations = relations(sessionTable, ({ one }) => ({
 }));
 
 export const projectTable = pgTable("project", {
-  id: serial().primaryKey(),
+  id: bigIntPrimaryKey(),
   name: text().notNull(),
-  ownerId: integer()
+  ownerId: bigintString()
     .notNull()
     .references(() => userTable.id, { onDelete: "cascade" }),
 });
@@ -56,9 +75,9 @@ export const projectRelations = relations(projectTable, ({ one, many }) => ({
 }));
 
 export const environmentTable = pgTable("environment", {
-  id: serial().primaryKey(),
+  id: bigIntPrimaryKey(),
   name: text().notNull(),
-  projectId: integer()
+  projectId: bigintString()
     .notNull()
     .references(() => projectTable.id, { onDelete: "cascade" }),
   dekWrappedByPassword: text().notNull(),
@@ -79,7 +98,7 @@ export const environmentRelations = relations(
 export const secretTable = pgTable(
   "secret",
   {
-    environmentId: integer()
+    environmentId: bigintString()
       .notNull()
       .references(() => environmentTable.id, { onDelete: "cascade" }),
     key: text().notNull(),
@@ -96,10 +115,10 @@ export const secretRelations = relations(secretTable, ({ one }) => ({
 }));
 
 export const apiClientTable = pgTable("api_client", {
-  id: serial().primaryKey(),
+  id: bigIntPrimaryKey(),
   name: text().notNull(),
   publicKey: text().notNull().unique(),
-  userId: integer()
+  userId: bigintString()
     .notNull()
     .references(() => userTable.id, { onDelete: "cascade" }),
 });
@@ -119,10 +138,10 @@ export const apiClientRelations = relations(
 export const environmentAccessTable = pgTable(
   "environment_access",
   {
-    environmentId: integer()
+    environmentId: bigintString()
       .notNull()
       .references(() => environmentTable.id, { onDelete: "cascade" }),
-    clientId: integer()
+    clientId: bigintString()
       .notNull()
       .references(() => apiClientTable.id, { onDelete: "cascade" }),
     dekWrappedByClientPublicKey: text().notNull(),
@@ -145,11 +164,13 @@ export const environmentAccessRelations = relations(
 );
 
 export const auditLogTable = pgTable("audit_log", {
-  id: serial().primaryKey(),
+  id: bigIntPrimaryKey(),
   timestamp: timestamp({ mode: "string" }).notNull().defaultNow(),
   action: text().notNull(),
-  userId: integer().references(() => userTable.id, { onDelete: "set null" }),
-  apiClientId: integer().references(() => apiClientTable.id, {
+  userId: bigintString().references(() => userTable.id, {
+    onDelete: "set null",
+  }),
+  apiClientId: bigintString().references(() => apiClientTable.id, {
     onDelete: "set null",
   }),
   details: text(),

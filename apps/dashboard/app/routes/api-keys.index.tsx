@@ -220,7 +220,7 @@ function ApiKeys() {
                     e.stopPropagation();
                     router.navigate({
                       to: "/api-keys/$apiClientId",
-                      params: { apiClientId: apiClient.id.toString() },
+                      params: { apiClientId: apiClient.id },
                     });
                   }}
                 >
