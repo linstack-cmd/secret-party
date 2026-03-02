@@ -7,6 +7,7 @@ const LOCAL_DATABASE_URL =
 const schema = z.object({
   DATABASE_URL: z.string().default(LOCAL_DATABASE_URL),
   NODE_ENV: z.string().default("development"),
+  PORT: z.coerce.number().default(3000),
   BACKUP_CONTAINER_PATH: z
     .string()
     .default("./backups/")
