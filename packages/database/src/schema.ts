@@ -2,13 +2,14 @@ import { relations } from "drizzle-orm";
 import {
   text,
   integer,
+  serial,
   pgTable,
   primaryKey,
   timestamp,
 } from "drizzle-orm/pg-core";
 
 export const userTable = pgTable("user", {
-  id: integer().primaryKey().generatedByDefaultAsIdentity(),
+  id: serial().primaryKey(),
   email: text().notNull().unique(),
   passwordHash: text().notNull(),
   isAdmin: integer().notNull().default(0),
@@ -22,7 +23,7 @@ export const userRelations = relations(userTable, ({ many }) => ({
 }));
 
 export const sessionTable = pgTable("session", {
-  id: integer().primaryKey().generatedByDefaultAsIdentity(),
+  id: serial().primaryKey(),
   userId: integer()
     .notNull()
     .references(() => userTable.id, { onDelete: "cascade" }),
@@ -39,7 +40,7 @@ export const sessionRelations = relations(sessionTable, ({ one }) => ({
 }));
 
 export const projectTable = pgTable("project", {
-  id: integer().primaryKey().generatedByDefaultAsIdentity(),
+  id: serial().primaryKey(),
   name: text().notNull(),
   ownerId: integer()
     .notNull()
@@ -55,7 +56,7 @@ export const projectRelations = relations(projectTable, ({ one, many }) => ({
 }));
 
 export const environmentTable = pgTable("environment", {
-  id: integer().primaryKey().generatedByDefaultAsIdentity(),
+  id: serial().primaryKey(),
   name: text().notNull(),
   projectId: integer()
     .notNull()
@@ -72,7 +73,7 @@ export const environmentRelations = relations(
     }),
     secrets: many(secretTable),
     access: many(environmentAccessTable),
-  })
+  }),
 );
 
 export const secretTable = pgTable(
@@ -84,7 +85,7 @@ export const secretTable = pgTable(
     key: text().notNull(),
     valueEncrypted: text().notNull(),
   },
-  (table) => [primaryKey({ columns: [table.environmentId, table.key] })]
+  (table) => [primaryKey({ columns: [table.environmentId, table.key] })],
 );
 
 export const secretRelations = relations(secretTable, ({ one }) => ({
@@ -95,7 +96,7 @@ export const secretRelations = relations(secretTable, ({ one }) => ({
 }));
 
 export const apiClientTable = pgTable("api_client", {
-  id: integer().primaryKey().generatedByDefaultAsIdentity(),
+  id: serial().primaryKey(),
   name: text().notNull(),
   publicKey: text().notNull().unique(),
   userId: integer()
@@ -112,7 +113,7 @@ export const apiClientRelations = relations(
     }),
     access: many(environmentAccessTable),
     auditLogs: many(auditLogTable),
-  })
+  }),
 );
 
 export const environmentAccessTable = pgTable(
@@ -126,7 +127,7 @@ export const environmentAccessTable = pgTable(
       .references(() => apiClientTable.id, { onDelete: "cascade" }),
     dekWrappedByClientPublicKey: text().notNull(),
   },
-  (table) => [primaryKey({ columns: [table.environmentId, table.clientId] })]
+  (table) => [primaryKey({ columns: [table.environmentId, table.clientId] })],
 );
 
 export const environmentAccessRelations = relations(
@@ -140,11 +141,11 @@ export const environmentAccessRelations = relations(
       fields: [environmentAccessTable.clientId],
       references: [apiClientTable.id],
     }),
-  })
+  }),
 );
 
 export const auditLogTable = pgTable("audit_log", {
-  id: integer().primaryKey().generatedByDefaultAsIdentity(),
+  id: serial().primaryKey(),
   timestamp: timestamp({ mode: "string" }).notNull().defaultNow(),
   action: text().notNull(),
   userId: integer().references(() => userTable.id, { onDelete: "set null" }),

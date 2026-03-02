@@ -5,57 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1757657751112,
-      "tag": "0000_tidy_ulik",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1757689372727,
-      "tag": "0001_thankful_lizard",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1757993208829,
-      "tag": "0002_spooky_marten_broadcloak",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1758335687929,
-      "tag": "0003_chilly_nemesis",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1762731194151,
-      "tag": "0004_blushing_triton",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1769885525993,
-      "tag": "0005_massive_johnny_storm",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1770519080746,
-      "tag": "0006_cultured_darkhawk",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1770520175347,
-      "tag": "0007_misty_ezekiel_stane",
+      "when": 1772426924620,
+      "tag": "0000_slimy_rick_jones",
       "breakpoints": true
     }
   ]
