@@ -1,7 +1,6 @@
-import "dotenv/config";
+import { env } from "@secret-party/env/env";
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import * as schema from "./schema";
-import { LOCAL_DATABASE_URL } from "./local";
 
 declare global {
   /**
@@ -15,7 +14,7 @@ declare global {
 }
 
 function buildDrizzle() {
-  return drizzle(process.env.DATABASE_URL ?? LOCAL_DATABASE_URL, {
+  return drizzle(env.DATABASE_URL, {
     casing: "snake_case",
     schema,
   });
@@ -23,6 +22,6 @@ function buildDrizzle() {
 
 export const db = globalThis.__db__ ?? buildDrizzle();
 
-if (process.env.NODE_ENV !== "production") {
+if (env.NODE_ENV !== "production") {
   globalThis.__db__ = db;
 }
