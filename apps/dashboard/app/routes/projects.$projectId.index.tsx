@@ -22,13 +22,13 @@ import { logAuditEvent } from "@secret-party/audit/logger";
 export const Route = createFileRoute("/projects/$projectId/")({
   component: ProjectDetail,
   loader: async ({ params }) =>
-    await loader({ data: { projectId: Number(params.projectId) } }),
+    await loader({ data: { projectId: params.projectId } }),
 });
 
 const loader = createServerFn({ method: "GET" })
   .validator(
     z.object({
-      projectId: z.number(),
+      projectId: z.string(),
     })
   )
   .handler(async ({ data: { projectId } }) => {
@@ -62,7 +62,7 @@ const loader = createServerFn({ method: "GET" })
   });
 
 const environmentCreationSchema = z.object({
-  projectId: z.number(),
+  projectId: z.string(),
   name: z.string().min(1, "Environment name is required"),
   password: z.string(),
 });
@@ -144,7 +144,7 @@ function ProjectDetail() {
   });
 
   const createEnvironmentMutation = useMutation({
-    mutationFn: (data: { projectId: number; name: string; password: string }) =>
+    mutationFn: (data: { projectId: string; name: string; password: string }) =>
       createEnvironment({ data }),
     onSuccess: async (result) => {
       // Reload the page to show the new environment
@@ -327,8 +327,8 @@ function ProjectDetail() {
                     router.navigate({
                       to: "/projects/$projectId/environments/$environmentId",
                       params: {
-                        projectId: project.id.toString(),
-                        environmentId: environment.id.toString(),
+                        projectId: project.id,
+                        environmentId: environment.id,
                       },
                     });
                   }}

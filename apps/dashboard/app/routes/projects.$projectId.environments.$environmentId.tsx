@@ -26,8 +26,8 @@ export const Route = createFileRoute(
   loader: async ({ params }) =>
     await loader({
       data: {
-        projectId: Number(params.projectId),
-        environmentId: Number(params.environmentId),
+        projectId: params.projectId,
+        environmentId: params.environmentId,
       },
     }),
 });
@@ -37,8 +37,8 @@ const loader = createServerFn({
 })
   .validator(
     z.object({
-      projectId: z.number(),
-      environmentId: z.number(),
+      projectId: z.string(),
+      environmentId: z.string(),
     })
   )
   .handler(async ({ data: { projectId, environmentId } }) => {
@@ -73,7 +73,7 @@ const loader = createServerFn({
   });
 
 const secretCreationSchema = z.object({
-  environmentId: z.number(),
+  environmentId: z.string(),
   secretKey: z.string(),
   secretValue: z.string(),
   password: z.string(),
@@ -118,7 +118,7 @@ const createSecret = createServerFn({
   });
 
 const secretDeletionSchema = z.object({
-  environmentId: z.number(),
+  environmentId: z.string(),
   secretKey: z.string(),
 });
 
@@ -153,7 +153,7 @@ const decryptSecret = createServerFn({
 })
   .validator(
     z.object({
-      environmentId: z.number(),
+      environmentId: z.string(),
       key: z.string(),
       password: z.string(),
     })

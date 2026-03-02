@@ -12,7 +12,7 @@ export async function hasFirstUser() {
   return userCount > 0;
 }
 
-export async function createSession(userId: number) {
+export async function createSession(userId: string) {
   const token = generateSessionToken();
   const expiresAt = new Date(Date.now() + SESSION_DURATION_MS).toISOString();
 

@@ -77,7 +77,7 @@ type TestState =
       status: "loaded";
       message: string;
       environments: Array<{
-        id: number;
+        id: string;
         name: string;
         projectName: string;
         secretKeys: string[];

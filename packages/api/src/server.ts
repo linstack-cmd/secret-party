@@ -85,7 +85,7 @@ async function environmentAccessMiddleware(
   const access = await db.query.environmentAccessTable.findFirst({
     where: and(
       eq(environmentAccessTable.clientId, apiClient.id),
-      eq(environmentAccessTable.environmentId, Number(environmentId)),
+      eq(environmentAccessTable.environmentId, environmentId),
     ),
   });
 
@@ -93,7 +93,7 @@ async function environmentAccessMiddleware(
     await logAuditEvent({
       action: "api_access_denied",
       apiClientId: apiClient.id,
-      details: { environmentId: Number(environmentId) },
+      details: { environmentId },
     });
     return c.json(
       {
@@ -118,7 +118,7 @@ function buildPublicApiServer() {
       zValidator(
         "param",
         z.object({
-          environmentId: z.coerce.number(),
+          environmentId: z.string(),
         }),
       ),
       async (c) => {
@@ -137,7 +137,7 @@ function buildPublicApiServer() {
       zValidator(
         "param",
         z.object({
-          environmentId: z.coerce.number(),
+          environmentId: z.string(),
         }),
       ),
       async (c) => {
@@ -176,7 +176,7 @@ function buildPublicApiServer() {
       zValidator(
         "param",
         z.object({
-          environmentId: z.coerce.number(),
+          environmentId: z.string(),
           key: z.string(),
         }),
       ),
@@ -218,7 +218,7 @@ function buildPublicApiServer() {
       zValidator(
         "param",
         z.object({
-          environmentId: z.coerce.number(),
+          environmentId: z.string(),
           key: z.string(),
         }),
       ),
@@ -268,7 +268,7 @@ function buildPublicApiServer() {
       zValidator(
         "param",
         z.object({
-          environmentId: z.coerce.number(),
+          environmentId: z.string(),
           key: z.string(),
         }),
       ),
@@ -319,7 +319,7 @@ function buildPublicApiServer() {
       zValidator(
         "param",
         z.object({
-          environmentId: z.coerce.number(),
+          environmentId: z.string(),
           key: z.string(),
         }),
       ),

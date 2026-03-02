@@ -28,13 +28,13 @@ import { logAuditEvent } from "@secret-party/audit/logger";
 export const Route = createFileRoute("/api-keys/$apiClientId/")({
   component: ApiKeyDetail,
   loader: async ({ params }) =>
-    await loader({ data: { apiClientId: Number(params.apiClientId) } }),
+    await loader({ data: { apiClientId: params.apiClientId } }),
 });
 
 const loader = createServerFn({ method: "GET" })
   .validator(
     z.object({
-      apiClientId: z.number(),
+      apiClientId: z.string(),
     })
   )
   .handler(async ({ data: { apiClientId } }) => {
@@ -93,8 +93,8 @@ const loader = createServerFn({ method: "GET" })
   });
 
 const grantAccessSchema = z.object({
-  apiClientId: z.number(),
-  environmentId: z.number(),
+  apiClientId: z.string(),
+  environmentId: z.string(),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -181,8 +181,8 @@ const grantAccess = createServerFn({
   });
 
 const revokeAccessSchema = z.object({
-  apiClientId: z.number(),
-  environmentId: z.number(),
+  apiClientId: z.string(),
+  environmentId: z.string(),
 });
 
 const revokeAccess = createServerFn({
@@ -222,7 +222,7 @@ const revokeAccess = createServerFn({
   });
 
 const deleteApiKeySchema = z.object({
-  apiClientId: z.number(),
+  apiClientId: z.string(),
 });
 
 const deleteApiKey = createServerFn({
@@ -259,9 +259,9 @@ function ApiKeyDetail() {
   const router = useRouter();
   const [isGrantModalOpen, setIsGrantModalOpen] = useState(false);
   const [selectedEnvironmentId, setSelectedEnvironmentId] = useState<
-    number | null
+    string | null
   >(null);
-  const [expandedProjects, setExpandedProjects] = useState<Set<number>>(
+  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(
     new Set()
   );
 
@@ -286,8 +286,8 @@ function ApiKeyDetail() {
 
   const grantAccessMutation = useMutation({
     mutationFn: (data: {
-      apiClientId: number;
-      environmentId: number;
+      apiClientId: string;
+      environmentId: string;
       password: string;
     }) => grantAccess({ data }),
     onSuccess: async () => {
@@ -303,7 +303,7 @@ function ApiKeyDetail() {
   });
 
   const revokeAccessMutation = useMutation({
-    mutationFn: (data: { apiClientId: number; environmentId: number }) =>
+    mutationFn: (data: { apiClientId: string; environmentId: string }) =>
       revokeAccess({ data }),
     onSuccess: async () => {
       router.invalidate();
@@ -315,7 +315,7 @@ function ApiKeyDetail() {
   });
 
   const deleteApiKeyMutation = useMutation({
-    mutationFn: (data: { apiClientId: number }) => deleteApiKey({ data }),
+    mutationFn: (data: { apiClientId: string }) => deleteApiKey({ data }),
     onSuccess: async () => {
       router.navigate({ to: "/api-keys" });
     },
@@ -325,12 +325,12 @@ function ApiKeyDetail() {
     },
   });
 
-  const handleGrantAccess = (environmentId: number) => {
+  const handleGrantAccess = (environmentId: string) => {
     setSelectedEnvironmentId(environmentId);
     setIsGrantModalOpen(true);
   };
 
-  const handleRevokeAccess = (environmentId: number) => {
+  const handleRevokeAccess = (environmentId: string) => {
     if (
       confirm(
         "Are you sure you want to revoke access to this environment? This action cannot be undone."
@@ -373,7 +373,7 @@ function ApiKeyDetail() {
           .find((env) => env.id === selectedEnvironmentId)
       : null;
 
-  const toggleProject = (projectId: number) => {
+  const toggleProject = (projectId: string) => {
     setExpandedProjects((prev) => {
       const next = new Set(prev);
       if (next.has(projectId)) {

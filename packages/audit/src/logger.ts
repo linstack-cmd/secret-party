@@ -27,8 +27,8 @@ export type AuditAction =
 
 export async function logAuditEvent(event: {
   action: AuditAction;
-  userId?: number;
-  apiClientId?: number;
+  userId?: string;
+  apiClientId?: string;
   details?: unknown;
 }): Promise<void> {
   try {

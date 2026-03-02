@@ -1,6 +1,5 @@
 import { db } from "@secret-party/database/db";
 import { getTableName, sql } from "drizzle-orm";
-import type { PgTable } from "drizzle-orm/pg-core";
 import {
   userTable,
   projectTable,
@@ -65,17 +64,14 @@ export async function restoreFromBackup(backup: BackupData): Promise<void> {
     // Insert in dependency order (roots first, leaves last).
     if (backup.tables.user.length > 0) {
       await tx.insert(userTable).values(backup.tables.user);
-      await resetSequence(tx, userTable, Math.max(...backup.tables.user.map((r) => r.id)));
     }
 
     if (backup.tables.project.length > 0) {
       await tx.insert(projectTable).values(backup.tables.project);
-      await resetSequence(tx, projectTable, Math.max(...backup.tables.project.map((r) => r.id)));
     }
 
     if (backup.tables.environment.length > 0) {
       await tx.insert(environmentTable).values(backup.tables.environment);
-      await resetSequence(tx, environmentTable, Math.max(...backup.tables.environment.map((r) => r.id)));
     }
 
     if (backup.tables.secret.length > 0) {
@@ -84,7 +80,6 @@ export async function restoreFromBackup(backup: BackupData): Promise<void> {
 
     if (backup.tables.api_client.length > 0) {
       await tx.insert(apiClientTable).values(backup.tables.api_client);
-      await resetSequence(tx, apiClientTable, Math.max(...backup.tables.api_client.map((r) => r.id)));
     }
 
     if (backup.tables.environment_access.length > 0) {
@@ -93,14 +88,6 @@ export async function restoreFromBackup(backup: BackupData): Promise<void> {
 
     if (backup.tables.audit_log.length > 0) {
       await tx.insert(auditLogTable).values(backup.tables.audit_log);
-      await resetSequence(tx, auditLogTable, Math.max(...backup.tables.audit_log.map((r) => r.id)));
     }
   });
-}
-
-async function resetSequence(tx: Parameters<Parameters<typeof db.transaction>[0]>[0], table: PgTable, maxId: number) {
-  const tableName = getTableName(table);
-  await tx.execute(
-    sql`SELECT setval(pg_get_serial_sequence(${tableName}, 'id'), ${maxId})`
-  );
 }
