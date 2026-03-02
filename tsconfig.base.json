@@ -20,6 +20,6 @@
 
     "jsx": "react-jsx",
     "lib": ["es2022", "dom", "dom.iterable"],
-    "types": ["node", "vite/client"]
+    "types": ["node"]
   }
 }

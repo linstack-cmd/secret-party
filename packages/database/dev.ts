@@ -1,17 +1,13 @@
 import { execSync, spawn } from "node:child_process";
 import pg from "pg";
-import { localDb } from "./src/local";
+import { env } from "@secret-party/env/env";
+
+const dbUrl = new URL(env.DATABASE_URL);
 
 async function waitForPostgres(timeoutMs = 30_000) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
-    const client = new pg.Client({
-      host: localDb.host,
-      port: localDb.port,
-      user: localDb.user,
-      password: localDb.password,
-      database: localDb.database,
-    });
+    const client = new pg.Client({ connectionString: env.DATABASE_URL });
     try {
       await client.connect();
       await client.end();
@@ -21,24 +17,30 @@ async function waitForPostgres(timeoutMs = 30_000) {
     }
   }
   throw new Error(
-    `Timed out waiting for Postgres on ${localDb.host}:${localDb.port}`,
+    `Timed out waiting for Postgres on ${dbUrl.hostname}:${dbUrl.port}`,
   );
 }
 
 function startPostgres() {
+  if (dbUrl.hostname !== "localhost") {
+    throw new Error(
+      `Refusing to start local Postgres: DATABASE_URL points to "${dbUrl.hostname}", not localhost`,
+    );
+  }
+
   const docker = spawn(
     "docker",
     [
       "run",
       "--rm",
       "-e",
-      `POSTGRES_USER=${localDb.user}`,
+      `POSTGRES_USER=${dbUrl.username}`,
       "-e",
-      `POSTGRES_PASSWORD=${localDb.password}`,
+      `POSTGRES_PASSWORD=${dbUrl.password}`,
       "-e",
-      `POSTGRES_DB=${localDb.database}`,
+      `POSTGRES_DB=${dbUrl.pathname.slice(1)}`,
       "-p",
-      `${localDb.port}:5432`,
+      `${dbUrl.port}:5432`,
       "postgres",
       "-c",
       "log_statement=all",
