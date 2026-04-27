@@ -15,7 +15,7 @@ import { mainContent } from "../styles/shared";
 import { Modal } from "../components/Modal";
 import { Button } from "../components/Button";
 import { logAuditEvent } from "@secret-party/audit/logger";
-import { useRegisterPageApi } from "../testing";
+import { useRegisterPageApi } from "../testing/useRegisterPageApi";
 
 export const Route = createFileRoute("/projects/")({
   component: Projects,

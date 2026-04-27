@@ -9,7 +9,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { useState, useRef } from "react";
 import z from "zod";
 import { Button } from "../components/Button";
-import { useRegisterPageApi } from "../testing";
+import { useRegisterPageApi } from "../testing/useRegisterPageApi";
 
 export const Route = createFileRoute("/login")({
   component: Login,
